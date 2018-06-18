@@ -1,0 +1,220 @@
+* {
+	font-family: sans-serif;
+	box-sizing: border-box;
+
+	/* disable mouse-drag-text-selection */
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+
+	/* disable text-selection-cursor */
+	cursor: default;
+
+	margin: 0;
+	padding: 0;
+
+	background: transparent;
+	border: none;
+	font-size: 14px;
+}
+
+body, html, main, canvas {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+main {
+	top: 0;
+	left: 0;
+	position: absolute;
+	background: transparent;
+	pointer-events: none;
+}
+
+
+
+
+.panel {
+	height: 100%; /* enable full scrolling */
+
+	position: absolute;
+	top: 0;
+
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+
+	overflow-y: auto; /* show scrollbars if necessary */
+	overflow-x: hidden;
+	padding-top: 18px;
+	padding-bottom: 40px;
+}
+#brush.panel {
+	width: 140px;
+	left: 0;
+	padding-left: 24px;
+}
+#settings.panel {
+	width: 160px;
+	right: 0;
+	padding-right: 24px;
+}
+.panel, .panel * {
+	pointer-events: auto;
+}
+.panel > section {
+	margin: 8px;
+}
+.panel > section > p {
+	padding: 6px;
+}
+
+/* move the brushpanel scrollbar to the left */
+#brush.panel {
+	direction: rtl;
+}
+#brush.panel > * {
+	direction: ltr;
+}
+
+/* panel section content */
+.panel .grid {
+	display: grid;
+	justify-content: center;
+	grid-template-columns: repeat(3, 1fr);
+	grid-gap: 0;
+}
+.panel .grid > * {
+	width: 100%;
+}
+.grid .button {
+	width: 100%;
+	padding: 8px;
+
+	height: 32px;
+	/*width: 32px;*/
+	/*height: 32px;*/
+}
+.tooltip.aside .info {
+	margin-left: 12px;
+}
+.number {
+	margin: 4px;
+	width: 95%;
+}
+.rule.button {
+	text-align: center;
+}
+/*.file .button {
+	width: 42px;
+	height: 42px;
+}*/
+
+
+#toolbar {
+	position: fixed;
+	top: 0;
+	right: 0;
+	width: 100%;
+
+	margin: 18px;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: stretch;
+}
+
+
+/*label > input {
+	display: none;
+}*/
+#toolbar > * {
+	margin: 8px;
+	height: 32px;
+	box-sizing: content-box;
+	pointer-events: auto;
+}
+#toolbar label {
+	display: inline-block;
+	width: 32px;
+	height: 32px;
+}
+#toolbar .button {
+	padding: 6px;
+	width: 100%;
+	height: 100%;
+}
+
+.tooltip {
+	max-width: 240px;
+	pointer-events: none;
+	display: none;
+	position: fixed;
+	z-index: 1000;
+	top: 20px;
+	left: 180px;
+}
+/*.tooltip.aside {
+	top: 20px;
+	left: 180px;
+}
+.tooltip.below {
+	margin-left: -100px;
+	top: 80px;
+}*/
+
+/* make tooltip visible on button hover */
+.button:hover + .tooltip {
+	display: inline;
+}
+
+/* play/pause buttons */
+#play, #pause {
+	width: 100%;
+	height: 100%;
+}
+#pause { display: none; }
+#play { display: inline-block; }
+input:checked + .button > #pause { display: inline-block; }
+input:checked + .button > #play { display: none; }
+
+/* TODO UNHACK */
+#toolbar div.button { /* play / pause container */
+	transform: translate(-0px, -6px);
+}
+
+#toolbar .info {
+	float: right;
+}
+
+.hidden {
+	display: none;
+}
+
+.button, .button * {
+	cursor: pointer;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*{}

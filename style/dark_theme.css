@@ -1,0 +1,149 @@
+:focus { outline: none; }
+::-moz-focus-inner { border: 0; }
+
+* {
+	color: #eee;
+	font-family: Roboto;
+	font-weight: bold;
+	line-height: 1.3em;
+}
+
+
+
+body {
+	background: #112;
+}
+
+/* groups of controls */
+#brush.panel > *, #settings.panel > *, #toolbar > *,
+.tooltip /* = tooltips*/
+{
+	background: #112;
+	border-radius: 2px;
+	border: 1px solid #223;
+	box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+}
+.number {
+	cursor: auto;
+	padding: 4px;
+	border-radius: 2px;
+	border: 2px solid #334;
+}
+.panel > * {
+	width: 100%;
+}
+/* panel section header */
+.panel > section > p {
+	background-color: #171727;
+}
+
+
+/* tooltips */
+.tooltip {
+	color: #667;
+	padding: 8px;
+}
+.button:hover + .tooltip {
+	background: linear-gradient(135deg, #112 30%, #191929 60%, #112 70%);
+	background-size: 300% 300%;
+	animation: move-background 3s ease-out;
+}
+/* tooltip header */
+.tooltip b {
+	color: #fff;
+}
+.info {
+	color: #667;
+	display: inline-block;
+	font-style: italic;
+	text-align: right;
+}
+
+.button {
+	opacity: 0.3;
+	transition: opacity 0.3s;
+}
+.panel .button {
+	opacity: 0.6;
+}
+
+input:hover + .button
+{
+	opacity: 0.5;
+	background: #223;
+	transition: none;
+
+	background: linear-gradient(135deg, #223 30%, #445 65%, #112 70%);
+	background-size: 300% 300%;
+	animation: increase-opacity 1.4s alternate infinite ease-in-out,
+			   move-background 0.35s ease-out;
+}
+@keyframes increase-opacity {
+	to { opacity: 0.45; }
+	from { opacity: 0.85; }
+}
+@keyframes move-background {
+    from { background-position: 100% 100% }
+    to { background-position: 0% 0% }
+}
+
+input:checked + .button,
+input:active + .button,
+input:checked + * + .button,
+input:active + * + .button
+{
+	opacity: 0.9;
+	background: #223;
+	animation: none;
+}
+
+
+.disabled-option .button,
+.disabled-option input:hover + .button,
+.disabled-option input:checked + .button,
+.disabled-option input:active + .button
+{
+	background: #112;
+	animation: none;
+	opacity: 0.05;
+	cursor: default;
+}
+
+
+
+
+#pattern-header {
+	/*color: #f36;*/
+}
+#survive-rules .rule.button, #survive-rules-header {
+	color: #65b8f7;
+}
+#revive-rules .rule.button, #revive-rules-header {
+	color: #42f4aa;
+}
+
+input:active + .rule.button {
+	background: #fff;
+	color: #223;
+}
+#survive-rules input:checked + .rule.button {
+	background: #65b8f7;
+	color: #223;
+}
+#revive-rules input:checked + .rule.button {
+	background: #42f4aa;
+	color: #223;
+}
+
+.move-cursor {
+	cursor: hand;
+	cursor: grab;
+	cursor: -webkit-grab;
+}
+.move-cursor:active {
+	cursor: grabbing;
+	cursor: -webkit-grabbing;
+}
+.brush-cursor {
+	cursor: url("img/cursor.png") 4 4, default;
+}

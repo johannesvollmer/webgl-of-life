@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<!--
+	ABOUT
+
+	This project was programmed for the IT-Talents programming contest 2017
+	(https://www.it-talents.de/foerderung/code-competition/code-competition-09-2017)
+	by Johannes Vollmer.
+
+	Unfortunately, four days before the end of the contest, my laptop broke.
+	This project was 'finished' with the macbook of a friend.
+	I really want to win this contest, because I need a new laptop.
+	Otherwise, I will not be able to continue studying.
+
+
+
+	All expensive operations (including applying the rules and displaying the board)
+	are computed on the GPU, using WebGL.
+	This will improve performance a lot on most devices.
+
+-->
+
+
+
+
+<!--
+	Ideas for future development
+
+	- serialize the game rules to exported svg!
+	- include rule-presets in the settings panel
+	- 'about this project' info
+	- let users create custom brushes to save intereting shapes
+	- restrict panning so that you cannot pan away the board
+-->
+
+
+
+
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Game Of Life 2017 by Johannes Vollmer</title>
+		<link rel="stylesheet" href="style/roboto/Roboto.css">
+		<link rel="stylesheet" href="style/main_layout.css">
+		<link rel="stylesheet" href="style/dark_theme.css">
+	</head>
+	<body>
+
+
+		<p id="no-js-warning">
+			<!--
+				This warning removes itself, if JS is enabled.
+				If disabled, it keeps showing that JS must be enabled.
+			-->
+			This website requires JavaScript to do anything interesting.
+
+			<script type="text/javascript">
+				const noJsWarning = document.getElementById('no-js-warning')
+				noJsWarning.parentElement.removeChild(noJsWarning)
+			</script>
+		</p>
+
+
+ 		<canvas id="gl">
+ 			<!--
+ 				Main OpenGL Canvas.
+
+ 				Is always 100% width and height of screen,
+				because some old browsers like chrome 61 or firefox 52
+				still do not support converting between global and local
+				mouse coordinates in 2017
+
+				(by using 100% screensize we can always use global coordinates)
+ 			-->
+ 			You must enable WebGL to use this Website
+ 		</canvas>
+
+
+
+
+
+		<!--
+			contains everything except the canvas
+			and will be overlayed like a head up display
+		 -->
+ 		<main>
+
+			<!--
+				the panel on the left
+				which can be shown/hidden with tab or by clicking on the pen symbol.
+				contains the ui for painting onto the board, including
+				- clearing the board
+				- randomizing the board
+				- choosing a pattern for painting
+				- import / export as svg
+				- changing board size
+			 -->
+ 			<div id="brush" class="hidden panel">
+ 				<section>
+					<p>Board</p>
+					<div class="grid">
+						<label>
+							<!--
+								This input will provide core functionality
+								(for example keeping track if it is checked),
+								but we will hide it and display an svg instead
+							 -->
+							<input type="button" class="hidden" id="clear-board"/>
+
+							<!-- this will be shown instead of the default input -->
+							<img src="style/img/clear.svg" class="button">
+
+							<!-- tooltip, visible when the user hovers the svg.button  -->
+							<p class="tooltip">
+								<b>Clear</b><br>
+								Remove all living cells
+							</p>
+						</label>
+						<label>
+							<input type="button" class="hidden" id="randomize-board"/>
+							<img src="style/img/randomize.svg" class="button">
+							<p class="tooltip">
+								<b>Randomize</b><br>
+								Generate a random pattern of cells
+							</p>
+						</label>
+					</div>
+ 				</section>
+
+ 				<section>
+ 					<p id="pattern-header">Pattern</p>
+					<div id="patterns" class="grid">
+						<!-- to be filled with labels in js -->
+					</div>
+ 				</section>
+
+				<section>
+					<p>Pattern Mode</p>
+					<div class="grid">
+						<label>
+							<input type="radio" name="cellmode" class="hidden"
+								id="pattern-mode-invert" checked
+							>
+							<img src="style/img/invert.svg" class="button">
+							<p class="tooltip">
+								<b>Invert Cells</b><br>
+								For every cell of the pattern,<br>
+								invert the life status of the<br>
+								underlying cell on the board
+							</p>
+						</label>
+						<label>
+							<input type="radio" name="cellmode" class="hidden"
+								id="pattern-mode-add"
+							>
+							<img src="style/img/add.svg" class="button">
+							<p class="tooltip">
+								<b>Add Cells</b><br>
+								For every cell of the pattern,<br>
+								revive the underlying cell on the board
+							</p>
+						</label>
+						<label>
+							<input type="radio" name="cellmode" class="hidden"
+								id="pattern-mode-remove"
+							>
+							<img src="style/img/remove.svg" class="button">
+							<p class="tooltip">
+								<b>Remove Cells</b><br>
+								For every cell of the pattern,<br>
+								remove the underlying cell on the board
+							</p>
+						</label>
+					</div>
+ 				</section>
+
+				<section>
+					<p>Load and Save</p>
+					<div class="file grid">
+						<label>
+	    					<input id="load-svg" name="files[]" accept="image/xml+svg"
+								type="file" class="hidden"
+							>
+							<img src="style/img/load.svg" class="button">
+							<p class="tooltip">
+								<b>Load SVG</b><br>
+								Load a board from an SVG file
+							</p>
+						</label>
+						<label>
+							<input type="button" id="save-svg" value="Save SVG"
+								class="hidden"
+							>
+							<img src="style/img/save.svg" class="button">
+							<p class="tooltip">
+								<b>Save SVG</b><br>
+								Save the board to an SVG file
+							</p>
+						</label>
+					</div>
+				</section>
+
+				<section>
+					<p>Board Size</p>
+					<label>
+						<input type="number" id="board-width" value="600" min="1"
+							class="number button"
+						>
+						<p class="tooltip">
+							<b>Board Width</b><br>
+							The number of cells living in a row.<br>
+							Should be between 1 and 4000, depending on your computer's memory.
+						</p>
+					</label>
+					<label>
+						<input type="number" id="board-height" value="400" min="1"
+							class="number button"
+						>
+						<p class="tooltip">
+							<b>Board Height</b><br>
+							The number of cells living in a column.<br>
+							Should be between 1 and 4000, depending on your computer's memory.
+						</p>
+					</label>
+ 				</section>
+
+ 			</div>
+
+
+
+
+			<!--
+				the panel on the right
+				which can be shown/hidden by clicking on the settings symbol.
+				contains the ui for various settings, including
+				- changing the game rules
+				- changing animation speed
+			 -->
+ 			<div id="settings" class="hidden panel">
+				<section>
+					<p id="survive-rules-header">Survive Rules</p>
+					<div class="grid" id="survive-rules">
+						<script type="text/javascript">
+							for(let i = 0; i < 9; i++){
+								const unit = (i == 1)? 'neighbour' : 'neighbours'
+								const checked = (i == 2 || i == 3)? 'checked' : ''
+								document.write(`
+									<label>
+										<input id="survive-${i}" type="checkbox"
+											name="survive-${i}" class="hidden"
+											${checked}
+										/>
+										<p class="rule button">${i}</p>
+										<p class="tooltip">
+											<b>Survive with ${i} ${unit}</b><br>
+											If enabled, any cell with ${i} ${unit} will remain living
+										</p>
+									</label>
+								`)
+							}
+						</script>
+					</div>
+				</section>
+
+				<section>
+					<p id="revive-rules-header">Revive Rules</p>
+					<div class="grid" id="revive-rules">
+						<script type="text/javascript">
+							for(let i = 0; i < 9; i++){
+								const unit = (i == 1)? 'neighbour' : 'neighbours'
+								const checked = (i == 3)? 'checked' : ''
+								document.write(`
+									<label>
+										<input id="revive-${i}" type="checkbox"
+											name="revive-${i}" class="hidden"
+											${checked}
+										/>
+										<p class="rule button">${i}</p>
+										<p class="tooltip">
+											<b>Revive with ${i} ${unit}</b><br>
+											If enabled, any cell with ${i} ${unit} will become alive
+										</p>
+									</label>
+								`)
+							}
+						</script>
+					</div>
+				</section>
+
+				<section>
+					<p>Animation Speed</p>
+					<label>
+    					<input id="speed" type="number" name="speed" value="300"
+							class="number button" step="0.1" min="0" max="5000"
+						>
+						<p class="tooltip">
+							<b>Animation Speed</b><br>
+							In generations per second.<br>
+							Values should be between 0 and 5000, depending on the grid size.
+						</p>
+					</label>
+				</section>
+
+				<section>
+					<p>View</p>
+					<div class="grid">
+						<label>
+	    					<input id="transition" type="checkbox" name="transition"
+								class="hidden" checked
+							>
+							<img src="style/img/transition.svg" class="button">
+							<p class="tooltip">
+								<b>Transition</b><br>
+								Blend between the generations
+								to create smooth transitions.
+							</p>
+						</label>
+						<label>
+							<input type="checkbox" class="hidden" id="grid-view"
+								name="grid-view" checked
+							>
+							<img src="style/img/grid.svg" class="button">
+							<p class="tooltip">
+								<b>Checkerboard</b>
+								<span class="info">[C]</span>
+								<br>Overlay a checkerboard when zoomed in closely
+							</p>
+						</label>
+						<label>
+							<input type="button" class="hidden" id="reset-view"/>
+							<img src="style/img/focus.svg" class="button">
+							<p class="tooltip">
+								<b>Reset</b>
+								<span class="info">[F]</span>
+								<br>Reset the view to the center of the board
+							</p>
+						</label>
+					</div>
+				</section>
+
+				<section>
+					<p>Cell Mode</p>
+					<div class="grid">
+						<label>
+							<input type="radio" class="hidden" name="life" id="life-view"
+								checked
+							>
+							<img src="style/img/life.svg" class="button">
+							<p class="tooltip">
+								<b>Cell Mode: Life</b>
+								<span class="info">[1]</span>
+								<br>Show if a cell is alive (red) or dead (blue)
+							</p>
+						</label>
+						<label>
+							<input type="radio" class="hidden" name="life" id="activity-view">
+							<img src="style/img/activity.svg" class="button">
+							<p class="tooltip">
+								<b>Cell Mode: Activity</b>
+								<span class="info">[2]</span>
+								<br>Show where a cell was born (white) or killed (red)
+							</p>
+						</label>
+						<label>
+							<input type="radio" class="hidden" name="life" id="neighbour-view">
+							<img src="style/img/cluster.svg" class="button">
+							<p class="tooltip">
+								<b>Cell Mode: Neighbours</b>
+								<span class="info">[3]</span>
+								<br>Show how many neighbours a cell has (warmer color means more neighbours)
+							</p>
+						</label>
+					</div>
+				</section>
+
+				<section>
+					<p>Zoom Sensitivity</p>
+					<label>
+    					<input id="sensitivity" type="number" name="sensitivity" value="10"
+							class="number button" step="0.1" min="0" max="100"
+						>
+						<p class="tooltip">
+							<b>Zoom Sensitivity</b><br>
+							How fast zooming will work. Default is 1.
+						</p>
+					</label>
+				</section>
+
+				<section>
+					<p>Generation</p>
+					<p>
+						Displaying #
+						<span id="generation-value">0</span>
+					</p>
+				</section>
+ 			</div>
+
+
+
+
+
+			<!--
+				contains the ui for playback and showing/hiding the other two panels
+			 -->
+			<header id="toolbar">
+				<div>
+					<label>
+						<input type="checkbox" class="hidden" id="paint" name="paint"/>
+						<img src="style/img/pen.svg" class="button">
+						<p class="tooltip below">
+							<b>Game: Paint</b>
+							<span class="info">[Tab]</span>
+							<br>Paint cells onto the board, resize it, and import or export the board
+						</p>
+					</label>
+				</div>
+
+				<div>
+					<label>
+						<input type="button" class="hidden" id="reset-time"/>
+						<img src="style/img/reset.svg" class="button">
+						<p class="tooltip below">
+							<b>Generation: Reset</b>
+							<span class="info">[Escape]</span>
+							<br>Reset the board to the first generation
+						</p>
+					</label><!-- this comment avoids whitespace
+					--><label>
+						<input type="checkbox" class="hidden" id="animate-time"
+							name="animate-time"
+						>
+						<div class="button">
+							<img id="play" src="style/img/play.svg" >
+							<img id="pause" src="style/img/pause.svg">
+						</div>
+						<p class="tooltip below">
+							<b>Generation: Animate</b>
+							<span class="info">[Spacebar]</span>
+							<br>Continuously apply the rules to the board
+						</p>
+					</label><!-- this comment prevents whitespace
+					--><label>
+						<input type="button" class="hidden" id="increment-time"/>
+						<img src="style/img/increment.svg" class="button">
+						<p class="tooltip below">
+							<b>Generation: Increase</b>
+							<span class="info">&nbsp;[Ctrl + Spacebar]</span>
+							<br>Apply the rules to the board once
+						</p>
+					</label>
+				</div>
+
+				<label>
+					<input type="checkbox" class="hidden" id="show-settings"/>
+					<img src="style/img/sliders.svg" class="button">
+					<p class="tooltip below">
+						<b>Settings: Show Settings</b><br>
+						Show various options, <br>including
+						the game rules, animation speed,
+						grid visibility and more.
+					</p>
+				</label>
+			</header>
+		</main>
+
+
+		<!-- generic scripts -->
+		<script type="text/javascript" src="js/CreateElement.js"></script>
+		<script type="text/javascript" src="js/ScaleAndDragDetector.js"></script>
+		<script type="text/javascript" src="js/Timer.js"></script>
+
+		<!-- webgl abstraction wrapper scripts -->
+		<script type="text/javascript" src="js/gl/Material.js"></script>
+		<script type="text/javascript" src="js/gl/Texture.js"></script>
+		<script type="text/javascript" src="js/gl/TriangleStrip.js"></script>
+		<script type="text/javascript" src="js/gl/OffscreenRenderer.js"></script>
+
+		<!-- game of life scripts -->
+		<script type="text/javascript" src="js/cell/CellConvolutionShader.js"></script>
+		<script type="text/javascript" src="js/cell/CellRenderingShader.js"></script>
+		<script type="text/javascript" src="js/cell/CellNeighbourShader.js"></script>
+		<script type="text/javascript" src="js/cell/CellBoard.js"></script>
+		<script type="text/javascript" src="js/cell/CellBoardView.js"></script>
+		<script type="text/javascript" src="js/cell/CellPainter.js"></script>
+		<script type="text/javascript" src="js/cell/BrushRenderingShader.js"></script>
+		<script type="text/javascript" src="js/cell/CellPainterPreview.js"></script>
+		<script type="text/javascript" src="js/cell/DefaultPatterns.js"></script>
+		<script type="text/javascript" src="js/cell/PatternThumbnails.js"></script>
+
+		<!-- app scripts -->
+		<script type="text/javascript" src="js/index.js"></script>
+		<script type="text/javascript"> setup() </script>
+
+
+	</body>
+</html>
