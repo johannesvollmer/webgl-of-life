@@ -1,5 +1,6 @@
 # webgl-of-life
-Conway's Game of Life Website, implemented using WebGL.
+Conway's [Game of Life Website](https://johannesvollmer.github.io/webgl-of-life/), implemented using WebGL.
+
 
 # About
 This project simulates Conway's Game of Life, a popular cellular automaton, as a website. The idea was to (ab)use OpenGL's hardware parrallelization to simulate the cells faster than a browser could with javascript.  The cell-board is stored as a texture2d, which is rendered to a second texture, producing the new generation of cells.
