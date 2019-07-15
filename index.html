@@ -8,8 +8,6 @@
 
 	Unfortunately, four days before the end of the contest, my laptop broke.
 	This project was 'finished' with the macbook of a friend.
-	I really want to win this contest, because I need a new laptop.
-	Otherwise, I will not be able to continue studying.
 
 
 
@@ -25,6 +23,7 @@
 <!--
 	Ideas for future development
 
+	- enable flipping brushes horizontally and vertically
 	- serialize the game rules to exported svg!
 	- include rule-presets in the settings panel
 	- 'about this project' info
@@ -38,10 +37,11 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>Game Of Life 2017 by Johannes Vollmer</title>
-		<link rel="stylesheet" href="style/roboto/Roboto.css">
+		<title>WebGL Of Life by Johannes Vollmer</title>
 		<link rel="stylesheet" href="style/main_layout.css">
 		<link rel="stylesheet" href="style/dark_theme.css">
+
+		<style>@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');</style>
 	</head>
 	<body>
 
@@ -67,7 +67,7 @@
  				Is always 100% width and height of screen,
 				because some old browsers like chrome 61 or firefox 52
 				still do not support converting between global and local
-				mouse coordinates in 2017
+				mouse coordinates in 2018
 
 				(by using 100% screensize we can always use global coordinates)
  			-->
@@ -375,12 +375,12 @@
 				<section>
 					<p>Zoom Sensitivity</p>
 					<label>
-    					<input id="sensitivity" type="number" name="sensitivity" value="10"
-							class="number button" step="0.1" min="0" max="100"
+    					<input id="sensitivity" type="number" name="sensitivity" value="100"
+							class="number button" step="10" min="0" max="1000"
 						>
 						<p class="tooltip">
 							<b>Zoom Sensitivity</b><br>
-							How fast zooming will work. Default is 1.
+							How fast zooming will work. Default is 100.
 						</p>
 					</label>
 				</section>
@@ -392,6 +392,17 @@
 						<span id="generation-value">0</span>
 					</p>
 				</section>
+
+				<section>
+					<p>About</p>
+					<label>
+						<input type="button" value="Read More" class="hidden" >
+						<!-- TODO: insert some margin via css -->
+						<a class="button" href="http://johannesvollmer.github.io">Read More</a>
+					</label>
+				</section>
+
+				<br>&nbsp; <!-- TODO: use margin via css -->
  			</div>
 
 
@@ -423,7 +434,7 @@
 							<span class="info">[Escape]</span>
 							<br>Reset the board to the first generation
 						</p>
-					</label><!-- this comment avoids whitespace
+					</label><!-- this comment prevents whitespace
 					--><label>
 						<input type="checkbox" class="hidden" id="animate-time"
 							name="animate-time"
@@ -463,7 +474,7 @@
 		</main>
 
 
-		<!-- generic scripts -->
+		<!-- generic dom and js scripts -->
 		<script type="text/javascript" src="js/CreateElement.js"></script>
 		<script type="text/javascript" src="js/ScaleAndDragDetector.js"></script>
 		<script type="text/javascript" src="js/Timer.js"></script>
@@ -474,7 +485,7 @@
 		<script type="text/javascript" src="js/gl/TriangleStrip.js"></script>
 		<script type="text/javascript" src="js/gl/OffscreenRenderer.js"></script>
 
-		<!-- game of life scripts -->
+		<!-- actual game of life scripts -->
 		<script type="text/javascript" src="js/cell/CellConvolutionShader.js"></script>
 		<script type="text/javascript" src="js/cell/CellRenderingShader.js"></script>
 		<script type="text/javascript" src="js/cell/CellNeighbourShader.js"></script>
