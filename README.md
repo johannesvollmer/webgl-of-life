@@ -17,7 +17,9 @@ To start the game, simply open the file called `index.html`, or visit __[the onl
 
 This project has been testet in __Firefox__ 52.8.1 (64-bit) and __Google Chrome__ 67.0.3396.87 (Official Build) (64-bit) on Linux/Debian.
 
+# Todo
 
+The scripts should really be batched together to reduce the currently large amount of http requests.
 
 
 ## Troubleshooting
